@@ -58,6 +58,15 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     return ActionResult(ok=True, message=message, entry=entry)
 
 
+@router.post("/{entry_id}/reconcile", response_model=ActionResult)
+def reconcile_entry(entry_id: int) -> ActionResult:
+    """按检查点记录版本数据重新核对：纠正状态错位、恢复数据残留与路径引用丢失。"""
+    entry, drift, message = service.reconcile(entry_id)
+    if entry is None:
+        return ActionResult(ok=False, message=message)
+    return ActionResult(ok=True, message=message, entry=entry)
+
+
 @router.get("/export")
 def export_entries() -> dict[str, Any]:
     """导出检查点恢复清单：返回当前过滤条件下的全量数据。"""
